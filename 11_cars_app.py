@@ -124,20 +124,47 @@ col3.metric(label='최초 생산 년도', value=f'{make_year}' + '년')
 st.divider()
 
 # 색상 별 가격 막대 차트
-
+fig_color_price = px.bar(df_select, x='color', y='price', title='색상별 평균 가격',
+                         labels={'price': '가격', 'color': '색상'}, color='color', barmode='group')
+st.plotly_chart(fig_color_price)
 # 제조사 별 가격 막대 차트
-
+fig_manufacturer_price = px.bar(df_select, x='manufacturer', y='price', title='제조사별 평균 가격',
+                                labels={'price': '가격', 'manufacturer': '제조사'}, color='manufacturer', barmode='group')
+st.plotly_chart(fig_manufacturer_price)
 # 차트 화면 표시 (2열)
+col1, col2 = st.columns(2)
+# 차량 수량 히스토그램
+col1.subheader('제조사별 차량 수량')
+fig_car_count = px.histogram(df_select, x='manufacturer', title='제조사별 차량 수량', labels={'manufacturer': '제조사'})
+col1.plotly_chart(fig_car_count)
+
+# 가격 분포 박스 플롯
+col2.subheader('가격 분포')
+fig_price_hist = px.histogram(df_select, x='price', title='가격 분포', labels={'price': '가격'}, nbins=30, color='price')
+col2.plotly_chart(fig_price_hist)
 
 st.divider()
 
 # 시트 유형별 파이 차트
-
+fig_seat_pie = px.pie(df_select, names='seat-make', values='price', title='시트 유형별 가격 비율',
+                       labels={'seat-make': '시트 유형', 'price': '가격'})
+st.plotly_chart(fig_seat_pie)
 # 가격 지표
 
 # 3열 레이아웃
+col1, col2, col3 = st.columns(3)
+
+# 평균 가격
+col1.metric(label='최고 가격', value=f'US ${df_select["price"].max()}')
+# 최저 가격
+col2.metric(label='최저 가격', value=f'US ${df_select["price"].min()}')
+# 중간 가격
+col3.metric(label='중앙값 가격', value=f'US ${df_select["price"].median()}')
 
 # 생산년도별 히스토그램
+fig_year_hist = px.histogram(df_select, x='make-year', y='price', title='생산년도별 가격 분포',
+                             labels={'make-year': '생산년도', 'price': '가격'}, nbins=20, color='make-year')
+st.plotly_chart(fig_year_hist)
 
 # Streamlit 스타일 숨기기 및 푸터 추가
 st.markdown(
