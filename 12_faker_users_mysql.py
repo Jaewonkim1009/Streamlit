@@ -55,7 +55,7 @@ def insert_fake_data(num_rows):
     try:
         cursor = conn.cursor()
         for _ in range(num_rows):
-            name = fake.name()
+            name = fake.name() #[:20] 이런식으로 사용하면 이름 자리수를 지정 할 수있다 (20자리수까지의)
             age = fake.random_int(min=18, max=80)
             cursor.execute(
                 "INSERT INTO users (name, age) VALUES (%s, %s)",
