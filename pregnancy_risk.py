@@ -71,8 +71,9 @@ with tab1:
     risk_counts = df['RiskLevel'].value_counts().reset_index()
     risk_counts.columns = ['위험도', '데이터 수']
     
-    fig = px.bar(risk_counts, x='위험도', y='데이터 수', color='위험도',
-                color_discrete_map={'low risk': 'green', 'mid risk': 'orange', 'high risk': 'red'})
+    fig = px.pie(risk_counts, names='위험도', values='데이터 수', color='위험도',
+                color_discrete_map={'low risk': 'green', 'mid risk': 'orange', 'high risk': 'red'},
+                title='위험도별 데이터 분포도')
     st.plotly_chart(fig, use_container_width=True)
 
 # 탭 2: 데이터 시각화
@@ -90,11 +91,19 @@ with tab2:
         st.plotly_chart(fig, use_container_width=True)
     
     with col2:
-        fig = px.box(df, x='RiskLevel', y='Age', color='RiskLevel',
-                    title='위험도별 연령 분포',
-                    labels={'Age': '연령', 'RiskLevel': '위험도'},
-                    color_discrete_map={'low risk': 'green', 'mid risk': 'orange', 'high risk': 'red'})
-        st.plotly_chart(fig, use_container_width=True)
+        st.subheader("위험도별 연령 분포")
+
+        # 그래프 생성
+        fig, ax = plt.subplots(figsize=(8, 5))
+        sns.kdeplot(data=df, x='Age', hue='RiskLevel', fill=True, palette={'low risk': 'green', 'mid risk': 'orange', 'high risk': 'red'})
+
+        # 그래프 제목 및 레이블 설정
+        ax.set_title("위험도별 연령 분포", fontsize=14)
+        ax.set_xlabel("연령")
+        ax.set_ylabel("밀도")
+
+        # 출력
+        st.pyplot(fig)
     
     st.markdown("""
     **설명**: 연령 분포를 보면, 대부분의 산모가 20대 초반에 집중되어 있으며, 두 번째 피크는 40-50대에서 나타납니다.
@@ -127,13 +136,23 @@ with tab2:
     """)
     
     # 시각화 3: 체온과 위험도
-    st.subheader("3. 체온과 위험도")
-    
-    fig = px.box(df, x='RiskLevel', y='BodyTemp', color='RiskLevel',
-                title='위험도별 체온 분포',
-                labels={'BodyTemp': '체온(°F)', 'RiskLevel': '위험도'},
-                color_discrete_map={'low risk': 'green', 'mid risk': 'orange', 'high risk': 'red'})
-    st.plotly_chart(fig, use_container_width=True)
+    # 체온(°F)을 섭씨(°C)로 변환
+    df['BodyTemp_C'] = (df['BodyTemp'] - 32) * 5 / 9
+
+    st.subheader("3. 체온과 위험도 (섭씨 °C)")
+
+    # 그래프 생성
+    fig, ax = plt.subplots(figsize=(20, 6))
+    sns.kdeplot(data=df, x='BodyTemp_C', hue='RiskLevel', fill=True, 
+                palette={'low risk': 'green', 'mid risk': 'orange', 'high risk': 'red'})
+
+    # 그래프 제목 및 레이블 설정
+    ax.set_title("위험도별 체온 분포 (섭씨 °C)", fontsize=14)
+    ax.set_xlabel("체온 (°C)")
+    ax.set_ylabel("밀도")
+
+    # 출력
+    st.pyplot(fig)
     
     st.markdown("""
     **설명**: 체온이 높을수록 위험도가 증가하는 경향이 있습니다. 
@@ -185,7 +204,13 @@ with tab2:
 # 탭 3: 예측 모델
 with tab3:
     st.header("예측 모델")
-    
+    st.write("""
+산모의 건강 데이터를 기반으로 위험도를 예측합니다.
+- 정확도: 약 71%
+- 저위험 예측 정확도: 68%
+- 중위험 예측 정확도: 68%
+- 고위험 예측 정확도: 84%
+""")
     # 모델 학습
     @st.cache_resource
     def train_model():
@@ -266,13 +291,10 @@ with tab3:
     st.markdown("""
     **모델 설명**: 
     
-    랜덤 포레스트 분류기를 사용하여 산모의 위험도를 예측하는 모델을 구축했습니다. 
+    산모의 위험도를 예측하는 모델을 구축했습니다. 
     이 모델은 여러 건강 지표를 동시에 고려하여 위험도를 예측하며, 비선형적인 관계도 잘 파악합니다.
-    
-    특성 중요도를 보면, 수축기 혈압, 이완기 혈압, 나이, BMI가 위험도 예측에 중요한 요소로 확인되었습니다.
-    SHAP 값을 통해 각 특성이 모델의 예측에 어떻게 기여하는지 확인할 수 있습니다.
-    
-    이 모델은 특히 고위험 산모를 식별하는 데 효과적이며, 고위험 예측 정확도가 84%로 높습니다.
+
+    특성 중요도를 보면, 수축기 혈압, 이완기 혈압, 나이, BMI가 위험도 예측에 중요한 요소로 확인됩니다.
     """)
 
 # 탭 4: 위험도 예측
@@ -286,7 +308,7 @@ with tab4:
     col1, col2, col3 = st.columns(3)
     
     with col1:
-        age = st.number_input("나이", min_value=10, max_value=70, value=30)
+        age = st.number_input("나이", min_value=20, max_value=70, value=30)
         systolic_bp = st.number_input("수축기 혈압 (mmHg)", min_value=70, max_value=180, value=120)
         diastolic_bp = st.number_input("이완기 혈압 (mmHg)", min_value=40, max_value=120, value=80)
         bs = st.number_input("혈당 (mmol/L)", min_value=5.0, max_value=20.0, value=7.0, step=0.1)
@@ -322,11 +344,15 @@ with tab4:
 
         # BMI 기반 위험도 평가
         bmi_risk = 0  # 기본값: 저위험
-        if bmi < 18.5:  # 저체중
-            bmi_risk = 1  # 중위험
         if bmi < 16:  # 심각한 저체중
             bmi_risk = 2  # 고위험
-        if bmi >= 30:  # 비만
+        if bmi < 18.5:  # 저체중
+            bmi_risk = 1  # 중위험
+        if 18.5 <= bmi < 23.0:
+            bmi_risk = 0  # 저위험
+        if 23.0 <= bmi < 25.0:
+            bmi_risk = 1  # 중위험
+        if bmi >= 27:  # 비만
             bmi_risk = 2  # 고위험
         
         # 입력 데이터 스케일링
