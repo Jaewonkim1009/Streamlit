@@ -289,15 +289,15 @@ with tab3:
     """)
 
 # 사이드바에서 데이터 입력 받기
-st.sidebar.header("사용자 데이터 입력")
+st.sidebar.header("사용자 데이터 입력:clipboard:")
 
 # 사이드바에서 데이터 입력받기
 age = st.sidebar.number_input("나이", min_value=20, max_value=70, value=25)
 systolic_bp = st.sidebar.number_input("수축기 혈압 (mmHg)", min_value=70, max_value=180, value=120)
 diastolic_bp = st.sidebar.number_input("이완기 혈압 (mmHg)", min_value=70, max_value=120, value=80)
-bs = st.sidebar.number_input("혈당 (mg/dL)", min_value=70.0, max_value=350.0, value=100.0, step=0.1)
+bs = st.sidebar.number_input("혈당 (mg/dL)", min_value=70, max_value=350, value=100, step=1)
 body_temp = st.sidebar.number_input("체온 (°C)", min_value=35.0, max_value=41.0, value=36.5, step=0.1)
-heart_rate = st.sidebar.number_input("심박수 (bpm)", min_value=60, max_value=100, value=75)
+heart_rate = st.sidebar.number_input("심박수 (bpm)", min_value=60, max_value=100, value=80)
 height = st.sidebar.number_input("키 (cm)", min_value=140.0, max_value=190.0, value=155.0, step=0.1)
 weight = st.sidebar.number_input("체중 (kg)", min_value=30.0, max_value=100.0, value=45.0, step=0.1)
 bmi = weight / ((height/100) ** 2)
